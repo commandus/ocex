@@ -5,7 +5,7 @@ project(ocex VERSION 1.0)
 INCLUDE_DIRECTORIES()
 
 set(SRC_OCEX
-	hello.c
+	hello.cpp
 )
 
 add_executable(ocex ${SRC_OCEX})

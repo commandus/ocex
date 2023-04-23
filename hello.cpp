@@ -30,14 +30,45 @@ const char *KernelSource = "\n" \
 
 std::string GetPlatformName(cl_platform_id &id) 
 {
-    return "-";
+    size_t sz;
+    clGetPlatformInfo(id, CL_PLATFORM_NAME, 0, nullptr, &sz);
+    std::string r;
+    r.resize(sz);
+    clGetPlatformInfo(id, CL_PLATFORM_NAME, sz, (void *) r.data(), &sz);
+    return r;
 }
 
 std::string GetDeviceName(cl_device_id &id)
 {
+    size_t sz;
+    clGetDeviceInfo(id, CL_DEVICE_NAME, 0, nullptr, &sz);
+    std::string r;
+    r.resize(sz);
+    clGetDeviceInfo(id, CL_DEVICE_NAME, sz, (void*)r.data(), &sz);
+
+    cl_uint units;
+    cl_device_type devtype;
+    size_t lmem;
+    cl_uint dims;
+    size_t wisz[3];
+    size_t wgsz;
+    size_t gmsz;
+    clGetDeviceInfo(id, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(units), &units, 0);
+    clGetDeviceInfo(id, CL_DEVICE_TYPE, sizeof(devtype), &devtype, 0);
+    clGetDeviceInfo(id, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(lmem), &lmem, 0);
+    clGetDeviceInfo(id, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(dims), &dims, 0);
+    clGetDeviceInfo(id, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(wisz), &wisz, 0);
+    clGetDeviceInfo(id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(wgsz), &wgsz, 0);
+
     std::stringstream ss;
-    ss << std::hex << id;
-    return "+";
+    ss << r
+        << " compute units: " << units
+        << " type: " << devtype << " (GPU = " << CL_DEVICE_TYPE_GPU
+        << ") local mem size: " << lmem
+        << " max item dimensions: " << dims
+        << " max item sizes: " << wisz
+        << " max work group size: " << wgsz;
+    return ss.str();
 }
 
 int getDeviceList(
@@ -62,7 +93,7 @@ int getDeviceList(
 
     int r = 0;
     for (cl_uint i = 0; i < platformIdCount; ++i) {
-        std::cout << "\t (" << (i + 1) << ") : " << GetPlatformName(platformIds[i]) << std::endl;
+        std::cout << GetPlatformName(platformIds[i]) << std::endl;
         // http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clGetDeviceIDs.html
         cl_uint deviceIdCount = 0;
         clGetDeviceIDs(platformIds[i], CL_DEVICE_TYPE_GPU, 0, nullptr,
@@ -81,7 +112,7 @@ int getDeviceList(
             deviceIds.data(), nullptr);
 
         for (cl_uint d = 0; d < deviceIdCount; ++d) {
-            std::cout << "\t (" << (d + 1) << ") : " << GetDeviceName(deviceIds[d]) << std::endl;
+            std::cout << GetDeviceName(deviceIds[d]) << std::endl;
         }
     }
     return r;
