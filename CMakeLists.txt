@@ -12,6 +12,9 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	target_link_libraries(ocex PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/third_party/ocl-sdk-light/lib/x86_64/opencl.lib")
 else()	
 # sudo apt install opencl-headers ocl-icd-opencl-dev -y
+    message(" *****************************************************************")
+	message(" ***** sudo apt install opencl-headers ocl-icd-opencl-dev -y *****")
+	message(" *****************************************************************")
 	target_link_libraries(ocex PRIVATE OpenCL)
 endif()
 
